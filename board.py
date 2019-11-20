@@ -82,40 +82,112 @@ class Board:
                     if piece.player == player:
                         moved_left = piece.move_left()
                         moved_right = piece.move_right()
-                        if self.is_in_valid_position(moved_right) or self.is_in_valid_position(moved_left):
+                        if self.is_in_movable_position(moved_right, False) or self.is_in_movable_position(moved_left, True):
                             movable_pieces.append(piece)
         return movable_pieces
 
     def get_possible_boards(self, piece):
         list_of_boards = []
         moved_left = piece.move_left()
-        if self.is_in_valid_position(moved_left):
-            list_of_boards.append(self.move_piece(piece, moved_left))
+        if self.is_in_movable_position(moved_left, True):
+            list_of_boards.extend(self.move_piece(piece, moved_left, True))
         moved_right = piece.move_right()
-        if self.is_in_valid_position(moved_right):
-            list_of_boards.append(self.move_piece(piece, moved_right))
+        if self.is_in_movable_position(moved_right, False):
+            list_of_boards.extend(self.move_piece(piece, moved_right, False))
         return list_of_boards
 
-    def is_in_valid_position(self, piece):
-        if piece.row < 0 or piece.row > 7 or piece.col < 0 or piece.col > 7:
+    def is_in_movable_position(self, piece, to_left):
+        return self.is_in_valid_empty_position(piece) or self.is_in_eating_position(piece, to_left)
+
+    def is_in_valid_empty_position(self, piece):
+        return not self.is_outside_board(piece) and self.is_in_empty_space(piece)
+
+    def is_outside_board(self, piece):
+        return piece.row < 0 or piece.row > 7 or piece.col < 0 or piece.col > 7
+
+    def is_in_empty_space(self, piece):
+        piece_in_place = self.board[piece.row][piece.col]
+        return type(piece_in_place) == EmptyPiece
+
+    def is_in_eating_position(self, piece, moving_to_left):
+        if self.is_outside_board(piece):
+            return False
+
+        piece_in_place = self.board[piece.row][piece.col]
+        # Piece is in a place where there is other piece from the same team
+        if piece_in_place.player == piece.player:
             return False
         else:
-            return type(self.board[piece.row][piece.col]) == EmptyPiece
+            # Piece is in a place where there is other piece from the other team
+            # Check if I move again in the same direction there is an empty space
+            if moving_to_left:
+                moved_to_left = piece.move_left()
+                return self.is_in_valid_empty_position(moved_to_left)
+            else:
+                moved_to_right = piece.move_right()
+                return self.is_in_valid_empty_position(moved_to_right)
 
-    def move_piece(self, old_piece, new_piece):
-        new_board = self.copy_board()
-        new_board[old_piece.row][old_piece.col] = EmptyPiece()
-        new_board[new_piece.row][new_piece.col] = new_piece
-        return Board(self.bottom_player, self.top_player, new_board)
+    def move_piece(self, current_piece, new_piece, to_left):
+        possible_boards = []
+        new_board_matrix = self.copy_board_matrix(self.board)
+        piece_in_place_of_new = new_board_matrix[new_piece.row][new_piece.col]
+        # Piece is moving to an empty space
+        if type(piece_in_place_of_new) == EmptyPiece:
+            new_board_matrix[current_piece.row][current_piece.col] = EmptyPiece()
+            new_board_matrix[new_piece.row][new_piece.col] = new_piece
+            return possible_boards.append(Board(self.bottom_player, self.top_player, new_board_matrix))
+        # Piece is eating an opposite piece
+        else:
+            # Eat pieces recursively and add all the possible results
+            self.eat_piece(new_board_matrix, possible_boards, current_piece, new_piece, to_left)
+            return possible_boards
 
-    def copy_board(self):
-        copied = self.create_empty_board()
+    def eat_piece(self, matrix, possible_boards, current_piece, new_piece, to_left):
+        # Set an empty space in the place where the piece was
+        matrix[current_piece.row][current_piece.col] = EmptyPiece()
+        # Set an empty space in the place where the other's team piece was
+        matrix[new_piece.row][new_piece.col] = EmptyPiece()
+
+        # If eating towards the left
+        if to_left:
+            # Move the piece to the left
+            moved_to_left = new_piece.move_left()
+            # Set the piece in that space. It should be an empty space because this method
+            # is called after is_eating_position
+            matrix[moved_to_left.row][moved_to_left.col] = moved_to_left
+            # Create the new board but not append it to the result because it might be possible to keep eating pieces
+            new_board = Board(self.bottom_player, self.top_player, matrix)
+            self.try_to_keep_eating(new_board, matrix, possible_boards, moved_to_left)
+        else:
+            moved_to_right = new_piece.move_right()
+            matrix[moved_to_right.row][moved_to_right.col] = moved_to_right
+            new_board = Board(self.bottom_player, self.top_player, matrix)
+            self.try_to_keep_eating(new_board, matrix, possible_boards, moved_to_right)
+
+    # Tries to keep eating pieces recursively until there's no possible piece to e at
+    def try_to_keep_eating(self, new_board, matrix, possible_boards, piece):
+        possible_eating_left = False
+        possible_eating_right = False
+        # If the piece is able to eat another piece to the left in the new board, eat it
+        if new_board.is_in_eating_position(piece.move_left(), True):
+            possible_eating_left = True
+            new_board.eat_piece(self.copy_board_matrix(matrix), possible_boards, piece, piece.move_left(), True)
+        # If the piece is able to eat another piece to the right in the new board, eat it
+        if new_board.is_in_eating_position(piece.move_right(), False):
+            possible_eating_right = True
+            new_board.eat_piece(self.copy_board_matrix(matrix), possible_boards, piece, piece.move_right(), False)
+        # If the piece is not able to eat another piece in any direction, append the resulting board
+        if not possible_eating_right and not possible_eating_left:
+            possible_boards.append(new_board)
+
+    def copy_board_matrix(self, matrix):
+        copied = self.create_empty_board_matrix()
         for row in range(8):
             for column in range(8):
-                copied[row][column] = self.board[row][column]
+                copied[row][column] = matrix[row][column]
         return copied
 
-    def create_empty_board(self):
+    def create_empty_board_matrix(self):
         board = []
         for row in range(8):
             board_row = []
