@@ -14,8 +14,11 @@ Players = (PLAYER_PIECE, AI_PIECE)
 
 
 class Board:
-    def __init__(self):
-        self.board = create_start_board()
+    def __init__(self, board=None):
+        if board is None:
+            self.board = create_start_board()
+        else:
+            self.board = board
 
     def get_possible_boards(self, piece):
         list_of_boards = []
@@ -93,4 +96,4 @@ def move_piece(board, piece, fromRow, fromColumn, toRow, toColumn):
     cp_board = copy_board(board)
     cp_board[fromRow][fromColumn] = NO_PIECE
     cp_board[toRow][toColumn] = piece
-    return cp_board
+    return Board(cp_board)

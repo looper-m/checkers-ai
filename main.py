@@ -1,14 +1,14 @@
-from board import create_start_board, get_possible_boards, PLAYER_PIECE
+from board import PLAYER_PIECE, Board
 
 
-def print_board(board):
-    for row in board:
+def print_board(board_to_print):
+    for row in board_to_print.board:
         print('|' + '|'.join(row) + '|')
 
 
-Board = create_start_board()
-print_board(Board)
-lis = get_possible_boards(Board, PLAYER_PIECE)
+board = Board()
+print_board(board)
+lis = board.get_possible_boards(PLAYER_PIECE)
 for x in lis:
     print_board(x)
     print("\n")
