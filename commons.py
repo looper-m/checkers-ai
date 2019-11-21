@@ -1,16 +1,10 @@
-import numpy as np
+# import numpy as np
 
 NO_PIECE = ' '
 PLAYER_PIECE = 'x'
 AI_PIECE = 'o'
 KING_PLAYER_PIECE = 'kx'
 KING_AI_PIECE = 'ko'
-
-PLAYER_MAP = {
-    NO_PIECE: 'NONE',
-    PLAYER_PIECE: 'PLAYER',
-    AI_PIECE: 'AI',
-}
 
 Players = (PLAYER_PIECE, AI_PIECE)
 
