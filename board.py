@@ -74,6 +74,13 @@ class Board:
             return self.top_player
         return None
 
+    def get_possible_boards(self, player):
+        movable_pieces = self.get_movable_pieces(player)
+        possible_boards = []
+        for movable_piece in movable_pieces:
+            possible_boards.extend(self.get_possible_boards_for_piece(movable_piece))
+        return possible_boards
+
     def get_movable_pieces(self, player):
         movable_pieces = []
         for row in self.board:
@@ -86,7 +93,7 @@ class Board:
                             movable_pieces.append(piece)
         return movable_pieces
 
-    def get_possible_boards(self, piece):
+    def get_possible_boards_for_piece(self, piece):
         list_of_boards = []
         moved_left = piece.move_left()
         if self.is_in_movable_position(moved_left, True):
