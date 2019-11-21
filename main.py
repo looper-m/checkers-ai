@@ -16,10 +16,10 @@ bottom_player = Player(True, "Player 1", "X")
 top_player = Player(False, "Player 2", "O")
 board = Board(bottom_player, top_player)
 
+# random piece placements to test
 board.board[4][1] = Piece(4, 1, top_player)
 board.board[1][0] = EmptyPiece()
 board.board[1][4] = EmptyPiece()
-
 
 print_board(board)
 print("\n")
@@ -35,8 +35,6 @@ for possible_board in possible_boards_for_piece:
     print_board(possible_board)
     print("\n")
 
-
 print(board.get_score_for_player(top_player))
 print(board.get_score_for_player(bottom_player))
 print(board.get_winner())
-
