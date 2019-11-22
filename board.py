@@ -3,9 +3,6 @@ from empty_piece import EmptyPiece
 from piece import Piece
 
 
-# TODO: add kings
-# TODO: add eating functionality
-
 class Board:
     def __init__(self, bottom_player, top_player, board=None):
         self.RED = bottom_player
@@ -109,7 +106,6 @@ class Board:
         moved_left = piece.move_left()
         if self.is_in_movable_position(moved_left, True):
             list_of_boards.extend(self.move_piece(piece, moved_left, True))
-            # list_of_boards = self.move_piece(piece, moved_left, True)
         moved_right = piece.move_right()
         if self.is_in_movable_position(moved_right, False):
             list_of_boards.extend(self.move_piece(piece, moved_right, False))
