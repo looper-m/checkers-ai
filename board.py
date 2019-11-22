@@ -202,3 +202,13 @@ class Board:
                 board_row.append(EmptyPiece())
             board.append(board_row)
         return board
+
+    # -------- Helper methods for user input ------------ #
+
+    # TODO: check that is inside board
+    def piece_is_of_player(self, row, col, player):
+        piece = self.board[row][col]
+        return type(piece) is not EmptyPiece and piece.player == player
+
+    def get_piece(self, row, col):
+        return self.board[row][col]
