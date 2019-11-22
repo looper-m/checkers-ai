@@ -1,5 +1,6 @@
 import board
 import math
+from transposition_cache import TranspositionCache
 
 # try for enum
 EXACT = 0
@@ -15,18 +16,22 @@ class CacheValue:
 
 
 class Algorithm:
-    def __int__(self):
-        self.transposition_table = dict()
+    loop = 0
+
+    def __init__(self):
+        self.transposition_table = TranspositionCache()
 
     def iterative_deepening(self, game_board, depth, ai, player2):
         firstGuess = 0
+        best_board = game_board
         for d in range(depth):
-            firstGuess = self.mtd(game_board, d, firstGuess, ai, player2)
+            firstGuess, best_board = self.mtd(game_board, d, firstGuess, ai, player2)
             # timeout return/ break
-        return firstGuess
+        return firstGuess, best_board
 
     def mtd(self, game_board, depth, firstGuess, ai, player2):
         score = firstGuess
+        best_board = game_board
         upperBound = +math.inf
         lowerBound = -math.inf
 
@@ -35,54 +40,67 @@ class Algorithm:
                 beta = score + 1
             else:
                 beta = score
-            score = self.alpha_beta_with_memory(game_board, beta - 1, beta, depth, True, ai, player2)
+            score, best_board = self.alpha_beta_with_memory(game_board, beta - 1, beta, depth, True, ai, player2)
             if score < beta:
                 upperBound = score
             else:
                 lowerBound = score
-        return score
+        return score, best_board
 
     def alpha_beta_with_memory(self, game_board, alpha, beta, depth, maximizer, ai, player2):
-        cache = self.transposition_table.get(game_board)
-
-        if game_board is not None and cache.depth >= depth:
+        cache = self.transposition_table.retrieve(game_board.board)
+        # print()
+        if cache is not None and cache.depth >= depth:
             if cache.bound == EXACT:
-                return cache.score
+                # print("Exact")
+                return cache.score, game_board
             elif cache.bound == LOWER_BOUND:
+                # print("lower bound")
                 alpha = max(alpha, cache.score)
                 if alpha >= beta:
-                    return cache.score
+                    return cache.score, game_board
             elif cache.bound == UPPER_BOUND:
+                # print("upper bound")
                 beta = min(beta, cache.score)
                 if alpha >= beta:
-                    return cache.score
+                    return cache.score, game_board
 
         if depth == 0:
-            return game_board.get_score(ai)
+            return game_board.get_score_for_player(ai), game_board
 
         if maximizer:
-            score = -math.inf
-            t_alpha = alpha
             valid_boards = game_board.get_possible_boards(ai)  # implementation check
+            best_score = -math.inf
+            best_board = game_board
+            t_alpha = alpha
             for next_board in valid_boards:
-                score = max(score, self.alpha_beta_with_memory(next_board, t_alpha, beta, depth - 1, False))
+                score = self.alpha_beta_with_memory(next_board, t_alpha, beta, depth - 1, False, ai, player2)[0]
+                # score = max(score, self.alpha_beta_with_memory(next_board, t_alpha, beta, depth - 1, False)
+                if score > best_score:
+                    best_score = score
+                    best_board = next_board
                 t_alpha = max(t_alpha, score)
                 if alpha >= beta:
                     break
         else:
-            score = +math.inf
-            t_beta = beta
             valid_boards = game_board.get_possible_boards(player2)
+            best_score = +math.inf
+            best_board = game_board
+            t_beta = beta
             for next_board in valid_boards:
-                score = min(score, self.alpha_beta_with_memory(next_board, alpha, t_beta, depth - 1, True))
+                score = self.alpha_beta_with_memory(next_board, alpha, t_beta, depth - 1, True, ai, player2)[0]
+                if score < best_score:
+                    best_score = score
+                    best_board = next_board
                 t_beta = min(t_beta, score)
                 if alpha >= beta:
                     break
-
-        if score <= alpha:
-            self.transposition_table[game_board] = CacheValue(UPPER_BOUND, score, depth)
-        elif score >= beta:
-            self.transposition_table[game_board] = CacheValue(LOWER_BOUND, score, depth)
+        # Algorithm.loop +=1
+        # print("looping ", Algorithm.loop)
+        if best_score <= alpha:
+            self.transposition_table.store(game_board.board, CacheValue(UPPER_BOUND, best_score, depth))
+        elif best_score >= beta:
+            self.transposition_table.store(game_board.board, CacheValue(LOWER_BOUND, best_score, depth))
         else:
-            self.transposition_table[game_board] = CacheValue(EXACT, score, depth)
-        return score
+            self.transposition_table.store(game_board.board, CacheValue(EXACT, best_score, depth))
+        return best_score, best_board

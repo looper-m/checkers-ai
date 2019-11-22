@@ -1,3 +1,4 @@
+import game_pieces
 from empty_piece import EmptyPiece
 from piece import Piece
 
@@ -7,8 +8,8 @@ from piece import Piece
 
 class Board:
     def __init__(self, bottom_player, top_player, board=None):
-        self.bottom_player = bottom_player
-        self.top_player = top_player
+        self.RED = bottom_player
+        self.BLACK = top_player
         if board is None:
             self.board = self.create_start_board()
         else:
@@ -22,27 +23,27 @@ class Board:
                 if row < 3:
                     if row == 0 or row == 2:
                         if column % 2 != 0:
-                            board_row.append(Piece(row, column, self.top_player))
+                            board_row.append(Piece(row, column, self.BLACK))
                         else:
                             board_row.append(EmptyPiece())
                     else:
                         if column % 2 != 0:
                             board_row.append(EmptyPiece())
                         else:
-                            board_row.append(Piece(row, column, self.top_player))
+                            board_row.append(Piece(row, column, self.BLACK))
                 elif 2 < row < 5:
                     board_row.append(EmptyPiece())
                 else:
                     if row == 5 or row == 7:
                         if column % 2 == 0:
-                            board_row.append(Piece(row, column, self.bottom_player))
+                            board_row.append(Piece(row, column, self.RED))
                         else:
                             board_row.append(EmptyPiece())
                     else:
                         if column % 2 == 0:
                             board_row.append(EmptyPiece())
                         else:
-                            board_row.append(Piece(row, column, self.bottom_player))
+                            board_row.append(Piece(row, column, self.RED))
             board.append(board_row)
         return board
 
@@ -64,14 +65,24 @@ class Board:
         for row in self.board:
             for piece in row:
                 if not type(piece) == EmptyPiece:
-                    if piece.player == self.bottom_player:
+                    if piece.player == self.RED:
                         bottom_player_pieces.append(piece)
                     else:
                         top_player_pieces.append(piece)
         if not top_player_pieces:
-            return self.bottom_player
+            return self.RED
         if not bottom_player_pieces:
-            return self.top_player
+            return self.BLACK
+        return None
+
+    # new, quitting when KING is found. i know its nonsense but the get_winner above never quits
+    def maybe_a_winner(self):
+        for row in range(8):
+            for column in range(8):
+                if self.board[row][column].symbol == game_pieces.BLACK_KING_PIECE:
+                    return self.BLACK
+                elif self.board[row][column].symbol == game_pieces.RED_KING_PIECE:
+                    return self.RED
         return None
 
     def get_possible_boards(self, player):
@@ -98,6 +109,7 @@ class Board:
         moved_left = piece.move_left()
         if self.is_in_movable_position(moved_left, True):
             list_of_boards.extend(self.move_piece(piece, moved_left, True))
+            # list_of_boards = self.move_piece(piece, moved_left, True)
         moved_right = piece.move_right()
         if self.is_in_movable_position(moved_right, False):
             list_of_boards.extend(self.move_piece(piece, moved_right, False))
@@ -122,7 +134,7 @@ class Board:
 
         piece_in_place = self.board[piece.row][piece.col]
         # Piece is in a place where there is other piece from the same team
-        if piece_in_place.player == piece.player:
+        if type(piece_in_place) == EmptyPiece or piece_in_place.player == piece.player:
             return False
         else:
             # Piece is in a place where there is other piece from the other team
@@ -142,8 +154,9 @@ class Board:
         if type(piece_in_place_of_new) == EmptyPiece:
             new_board_matrix[current_piece.row][current_piece.col] = EmptyPiece()
             new_board_matrix[new_piece.row][new_piece.col] = new_piece
-            return possible_boards.append(Board(self.bottom_player, self.top_player, new_board_matrix))
-        # Piece is eating an opposite piece
+            possible_boards.append(Board(self.RED, self.BLACK, new_board_matrix))
+            return possible_boards
+            # Piece is eating an opposite piece
         else:
             # Eat pieces recursively and add all the possible results
             self.eat_piece(new_board_matrix, possible_boards, current_piece, new_piece, to_left)
@@ -163,12 +176,12 @@ class Board:
             # is called after is_eating_position
             matrix[moved_to_left.row][moved_to_left.col] = moved_to_left
             # Create the new board but not append it to the result because it might be possible to keep eating pieces
-            new_board = Board(self.bottom_player, self.top_player, matrix)
+            new_board = Board(self.RED, self.BLACK, matrix)
             self.try_to_keep_eating(new_board, matrix, possible_boards, moved_to_left)
         else:
             moved_to_right = new_piece.move_right()
             matrix[moved_to_right.row][moved_to_right.col] = moved_to_right
-            new_board = Board(self.bottom_player, self.top_player, matrix)
+            new_board = Board(self.RED, self.BLACK, matrix)
             self.try_to_keep_eating(new_board, matrix, possible_boards, moved_to_right)
 
     # Tries to keep eating pieces recursively until there's no possible piece to e at
