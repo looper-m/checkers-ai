@@ -3,11 +3,12 @@ from empty_piece import EmptyPiece
 from king_piece import KingPiece
 from piece import Piece
 
+
 class Direction:
-    RIGHT = 0
-    LEFT = 1
-    RIGHT_BACKWARDS = 2
-    LEFT_BACKWARDS = 3
+    RIGHT = "RIGHT"
+    LEFT = "LEFT"
+    RIGHT_BACKWARDS = "RIGHT_BACKWARDS"
+    LEFT_BACKWARDS = "LEFT_BACKWARDS"
 
 
 class Board:
@@ -279,10 +280,90 @@ class Board:
 
     # -------- Helper methods for user input ------------ #
 
-    # TODO: check that is inside board
     def piece_is_of_player(self, row, col, player):
         piece = self.board[row][col]
         return type(piece) is not EmptyPiece and piece.player == player
 
     def get_piece(self, row, col):
         return self.board[row][col]
+
+    def possible_move_directions(self, piece):
+        directions = []
+        moved_left = piece.move_left()
+        moved_right = piece.move_right()
+        if self.is_in_movable_position(moved_left, Direction.LEFT):
+            directions.append(Direction.LEFT)
+        if self.is_in_movable_position(moved_right, Direction.RIGHT):
+            directions.append(Direction.RIGHT)
+        if type(piece) == KingPiece:
+            moved_left_backwards = piece.move_left_backwards()
+            moved_right_backwards = piece.move_right_backwards()
+            if self.is_in_movable_position(moved_left_backwards, Direction.LEFT_BACKWARDS):
+                directions.append(Direction.LEFT_BACKWARDS)
+            if self.is_in_movable_position(moved_right_backwards, Direction.RIGHT_BACKWARDS):
+                directions.append(Direction.RIGHT_BACKWARDS)
+        return directions
+
+    def move_piece_in_direction(self, piece, direction):
+        moved_piece = None
+        if direction == Direction.LEFT:
+            moved_piece = piece.move_left()
+        elif direction == Direction.RIGHT:
+            moved_piece = piece.move_right()
+        elif direction == Direction.LEFT_BACKWARDS:
+            moved_piece = piece.move_left_backwards()
+        elif direction == Direction.RIGHT_BACKWARDS:
+            moved_piece = piece.move_right_backwards()
+        return self.move_piece_in_board(piece, moved_piece, direction)
+
+    def move_piece_in_board(self, current_piece, new_piece, direction):
+        piece_in_place = self.board[new_piece.row][new_piece.col]
+        # Piece is moving to an empty space
+        if type(piece_in_place) == EmptyPiece:
+            self.board[current_piece.row][current_piece.col] = EmptyPiece()
+            self.board[new_piece.row][new_piece.col] = new_piece
+            return new_piece
+        # Piece is eating an opposite piece
+        else:
+            # Eat pieces recursively and add all the possible results
+            return self.eat_piece_in_board(current_piece, new_piece, direction)
+
+    def eat_piece_in_board(self,current_piece, new_piece, direction):
+        # Set an empty space in the place where the piece was
+        self.board[current_piece.row][current_piece.col] = EmptyPiece()
+        # Set an empty space in the place where the other's team piece was
+        self.board[new_piece.row][new_piece.col] = EmptyPiece()
+
+        # If eating towards the left
+        if direction == Direction.LEFT:
+            # Move the piece to the left
+            moved_to_left = new_piece.move_left()
+            # Set the piece in that space. It should be an empty space because this method
+            # is called after is_eating_position
+            self.board[moved_to_left.row][moved_to_left.col] = moved_to_left
+            return moved_to_left
+        elif direction == Direction.RIGHT:
+            moved_to_right = new_piece.move_right()
+            self.board[moved_to_right.row][moved_to_right.col] = moved_to_right
+            return moved_to_right
+        elif direction == Direction.LEFT_BACKWARDS:
+            moved_to_left_backwards = new_piece.move_left_backwards()
+            self.board[moved_to_left_backwards.row][moved_to_left_backwards.col] = moved_to_left_backwards
+            return moved_to_left_backwards
+        elif direction == Direction.RIGHT_BACKWARDS:
+            moved_to_right_backwards = new_piece.move_right_backwards()
+            self.board[moved_to_right_backwards.row][moved_to_right_backwards.col] = moved_to_right_backwards
+            return moved_to_right_backwards
+
+    def get_possible_eating_moves(self, piece):
+        directions = []
+        if self.is_in_eating_position(piece.move_left(), Direction.LEFT):
+            directions.append(Direction.LEFT)
+        if self.is_in_eating_position(piece.move_right(), Direction.RIGHT):
+            directions.append(Direction.RIGHT)
+        if type(piece) == KingPiece:
+            if self.is_in_eating_position(piece.move_left_backwards(), Direction.LEFT_BACKWARDS):
+                directions.append(Direction.LEFT_BACKWARDS)
+            if self.is_in_eating_position(piece.move_right_backwards(), Direction.RIGHT_BACKWARDS):
+                directions.append(Direction.RIGHT_BACKWARDS)
+        return directions
