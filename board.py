@@ -322,11 +322,12 @@ class Board:
         if type(piece_in_place) == EmptyPiece:
             self.board[current_piece.row][current_piece.col] = EmptyPiece()
             self.board[new_piece.row][new_piece.col] = new_piece
-            return new_piece
+            # First argument is if a piece was eaten
+            return False, new_piece
         # Piece is eating an opposite piece
         else:
             # Eat pieces recursively and add all the possible results
-            return self.eat_piece_in_board(current_piece, new_piece, direction)
+            return True, self.eat_piece_in_board(current_piece, new_piece, direction)
 
     def eat_piece_in_board(self,current_piece, new_piece, direction):
         # Set an empty space in the place where the piece was

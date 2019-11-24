@@ -53,14 +53,16 @@ board = Board(human_player, ai_player)
 algorithm = Algorithm()
 
 
-# This is to try things
-"""""# board.board[4][3] = Piece(4, 3, ai_player)
+# TODO: remove this, is to try things
+"""board.board[3][4] = Piece(3, 4, ai_player)
+board.board[5][2] = Piece(5, 2, ai_player)
+board.board[3][2] = Piece(3, 2, ai_player)
 board.board[1][2] = EmptyPiece()
 board.board[1][0] = EmptyPiece()
 board.board[1][4] = EmptyPiece()
 board.board[1][6] = EmptyPiece()
 
-# board.board[2][1] = EmptyPiece()
+board.board[2][1] = EmptyPiece()
 board.board[2][3] = EmptyPiece()
 board.board[2][5] = EmptyPiece()
 board.board[2][7] = EmptyPiece()
@@ -71,7 +73,7 @@ board.board[0][5] = EmptyPiece()
 board.board[0][7] = EmptyPiece()
 
 board.board[5][0] = EmptyPiece()
-board.board[5][2] = EmptyPiece()
+# board.board[5][2] = EmptyPiece()
 board.board[5][4] = EmptyPiece()
 board.board[5][6] = EmptyPiece()
 
@@ -84,7 +86,7 @@ board.board[7][2] = EmptyPiece()
 board.board[7][4] = EmptyPiece()
 board.board[7][6] = EmptyPiece()
 
-board.board[3][2] = KingPiece(3, 2, human_player)"""
+# board.board[3][2] = KingPiece(3, 2, human_player)"""
 
 print(name + ", you will be playing as X\n")
 print_board(board)
@@ -108,19 +110,21 @@ while board.get_winner() is None:
         direction_string = input("Select one of the following directions " + " ".join(possible_move_directions) + " : ")
 
     # Move the piece
-    moved_piece = board.move_piece_in_direction(selected_piece, get_direction_from_string(direction_string))
-    # If more pieces can be eaten, eat if there is only one possibility, ask for the direction if there is more than one
-    possible_eat_directions = board.get_possible_eating_moves(moved_piece)
-    while len(possible_eat_directions) > 0:
-        if len(possible_eat_directions) == 1:
-            moved_piece = board.move_piece_in_direction(moved_piece, possible_eat_directions[0])
-        else:
-            print_board(board)
-            print("\n")
-
-            direction_string = input("Select one of the following directions " + " ".join(possible_eat_directions) + " : ")
-            moved_piece = board.move_piece_in_direction(moved_piece, get_direction_from_string(direction_string))
+    eaten, moved_piece = board.move_piece_in_direction(selected_piece, get_direction_from_string(direction_string))
+    # If a piece was eaten and more pieces can be eaten, eat if there is only one possibility,
+    # ask for the direction if there is more than one
+    if eaten:
         possible_eat_directions = board.get_possible_eating_moves(moved_piece)
+        while len(possible_eat_directions) > 0:
+            if len(possible_eat_directions) == 1:
+                moved_piece = board.move_piece_in_direction(moved_piece, possible_eat_directions[0])[1]
+            else:
+                print_board(board)
+                print("\n")
+
+                direction_string = input("Select one of the following directions " + " ".join(possible_eat_directions) + " : ")
+                moved_piece = board.move_piece_in_direction(moved_piece, get_direction_from_string(direction_string))[1]
+            possible_eat_directions = board.get_possible_eating_moves(moved_piece)
 
     print_board(board)
     print("\n")
