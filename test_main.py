@@ -71,11 +71,11 @@ next_board = game.iterative_deepening(next_board, 7, BLACK, RED)[1]
 turn = False
 times = 1
 start = time.time()
-while next_board.maybe_a_winner() is None:
+while next_board.get_winner() is None:
     if turn:
-        next_board = game.iterative_deepening(next_board, 3, BLACK, RED)[1]
+        next_board = game.iterative_deepening(next_board, 7, BLACK, RED)[1]
     else:
-        next_board = game.iterative_deepening(next_board, 3, RED, BLACK)[1]
+        next_board = game.iterative_deepening(next_board, 7, RED, BLACK)[1]
     times += 1
     # print(next_board.maybe_a_winner())
     print_board(next_board)
