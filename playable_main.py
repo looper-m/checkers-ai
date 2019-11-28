@@ -19,14 +19,15 @@ def print_board(board_to_print):
 
 
 def get_direction_from_string(string):
+    l_string = string.lower()
     direction_result = None
-    if string == "LEFT":
+    if l_string in ("l", "left"):
         direction_result = Direction.LEFT
-    elif string == "RIGHT":
+    elif l_string in ("r", "right"):
         direction_result = Direction.RIGHT
-    elif string == "LEFT_BACKWARDS":
+    elif l_string in ("left_backwards", "left backwards", "left back", "lb", "l b"):
         direction_result = Direction.LEFT_BACKWARDS
-    elif string == "RIGHT_BACKWARDS":
+    elif l_string in ("right_backwards", "right backwards", "right back", "rb", "r b"):
         direction_result = Direction.RIGHT_BACKWARDS
     return direction_result
 
