@@ -1,4 +1,4 @@
-import board
+import time
 import math
 from transposition_cache import TranspositionCache
 
@@ -48,11 +48,12 @@ class Algorithm:
         return score, best_board
 
     def alpha_beta_with_memory(self, game_board, alpha, beta, depth, maximizer, ai, player2):
+        # print("-------------------------------------------------------")
         cache = self.transposition_table.retrieve(game_board.board)
-        # print()
+        # print(self.transposition_table.get_size())
         if cache is not None and cache.depth >= depth:
             if cache.bound == EXACT:
-                # print("Exact")
+                print("Exact")
                 return cache.score, game_board
             elif cache.bound == LOWER_BOUND:
                 # print("lower bound")
@@ -64,6 +65,7 @@ class Algorithm:
                 beta = min(beta, cache.score)
                 if alpha >= beta:
                     return cache.score, game_board
+            # time.sleep(5)
 
         if depth == 0:
             return game_board.get_score_for_player(ai), game_board
@@ -75,12 +77,11 @@ class Algorithm:
             t_alpha = alpha
             for next_board in valid_boards:
                 score = self.alpha_beta_with_memory(next_board, t_alpha, beta, depth - 1, False, ai, player2)[0]
-                # score = max(score, self.alpha_beta_with_memory(next_board, t_alpha, beta, depth - 1, False)
                 if score > best_score:
                     best_score = score
                     best_board = next_board
-                t_alpha = max(t_alpha, score)
-                if alpha >= beta:
+                t_alpha = max(t_alpha, best_score)
+                if best_score >= beta:
                     break
         else:
             valid_boards = game_board.get_possible_boards(player2)
@@ -92,8 +93,8 @@ class Algorithm:
                 if score < best_score:
                     best_score = score
                     best_board = next_board
-                t_beta = min(t_beta, score)
-                if alpha >= beta:
+                t_beta = min(t_beta, best_score)
+                if alpha >= best_score:
                     break
         # Algorithm.loop +=1
         # print("looping ", Algorithm.loop)

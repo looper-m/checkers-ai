@@ -1,11 +1,12 @@
 import time
 import game_pieces
 
-from algorithm import Algorithm
+from algorithm import Algorithm, CacheValue
 from board import Board
 from empty_piece import EmptyPiece
 from piece import Piece
 from player import Player
+from transposition_cache import TranspositionCache
 
 
 def print_board(board_to_print):
@@ -49,7 +50,7 @@ print_board(board)
 print("\n")
 
 game = Algorithm()
-next_board = game.iterative_deepening(board, 3, BLACK, RED)[1]
+next_board = game.iterative_deepening(board, 2, BLACK, RED)[1]
 
 print_board(next_board)
 print("\n")
@@ -61,10 +62,10 @@ next_board.board[4][3] = EmptyPiece()
 print_board(next_board)
 print("\n")
 
-next_board = game.iterative_deepening(next_board, 3, BLACK, RED)[1]
+next_board = game.iterative_deepening(next_board, 7, BLACK, RED)[1]
 
-print_board(next_board)
-print("\n")
+# print_board(next_board)
+# print("\n")
 
 turn = False
 times = 1
@@ -78,7 +79,14 @@ while next_board.maybe_a_winner() is None:
     # print(next_board.maybe_a_winner())
     print_board(next_board)
     turn = not turn
-    # time.sleep(3)
+    if times == 20:
+        break
     print("\n")
+
+# testcache = TranspositionCache()
+# testcache.store(next_board.board, CacheValue(0, 20, 3))
+#
+# testcache.printcache()
+# testcache.retrieve(next_board.board)
 
 print("average time: ", (time.time() - start) / times)
