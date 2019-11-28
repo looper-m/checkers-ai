@@ -64,6 +64,7 @@ print("\n")
 
 next_board = game.iterative_deepening(next_board, 7, BLACK, RED)[1]
 
+
 # print_board(next_board)
 # print("\n")
 
