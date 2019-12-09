@@ -4,6 +4,12 @@ from king_piece import KingPiece
 from piece import Piece
 
 
+class MoveKind:
+    NORMAL = 0
+    EATING = 1
+    CROWNED = 2
+
+
 class Direction:
     RIGHT = "RIGHT"
     LEFT = "LEFT"
@@ -71,6 +77,13 @@ class Board:
         return score
 
     def get_winner(self):
+        red_valid_boards = self.get_possible_boards(self.RED)
+        if len(red_valid_boards) == 0:
+            return self.BLACK
+        black_valid_boards = self.get_possible_boards(self.BLACK)
+        if len(black_valid_boards) == 0:
+            return self.RED
+
         top_player_pieces = []
         bottom_player_pieces = []
         # TODO: this can be improved: stop if both lists are not empty. dont even use lists maybe.
@@ -190,6 +203,10 @@ class Board:
             new_board_matrix[current_piece.row][current_piece.col] = EmptyPiece()
             new_board_matrix[new_piece.row][new_piece.col] = new_piece
             possible_boards.append(Board(self.RED, self.BLACK, new_board_matrix))
+            # if type(new_piece) == KingPiece and type(current_piece) == Piece:
+            #     possible_boards.append([Board(self.RED, self.BLACK, new_board_matrix), MoveKind.CROWNED])
+            # else:
+            #     possible_boards.append([Board(self.RED, self.BLACK, new_board_matrix), MoveKind.NORMAL])
             return possible_boards
             # Piece is eating an opposite piece
         else:
@@ -236,16 +253,19 @@ class Board:
         # If the piece is able to eat another piece to the left in the new board, eat it
         if new_board.is_in_eating_position(piece.move_left(), Direction.LEFT):
             possible_eating_left = True
-            new_board.eat_piece(self.copy_board_matrix(matrix), possible_boards, piece, piece.move_left(), Direction.LEFT)
+            new_board.eat_piece(self.copy_board_matrix(matrix), possible_boards, piece, piece.move_left(),
+                                Direction.LEFT)
         # If the piece is able to eat another piece to the right in the new board, eat it
         if new_board.is_in_eating_position(piece.move_right(), Direction.RIGHT):
             possible_eating_right = True
-            new_board.eat_piece(self.copy_board_matrix(matrix), possible_boards, piece, piece.move_right(), Direction.RIGHT)
+            new_board.eat_piece(self.copy_board_matrix(matrix), possible_boards, piece, piece.move_right(),
+                                Direction.RIGHT)
 
         if type(piece) == Piece:
             # If the piece is not able to eat another piece in any direction, append the resulting board
             if not possible_eating_right and not possible_eating_left:
                 possible_boards.append(new_board)
+                # possible_boards.append([new_board, MoveKind.EATING])
         # For the king we also need to try keep eating backwards
         else:
             possible_eating_left_backwards = False
@@ -256,11 +276,12 @@ class Board:
                                     Direction.LEFT_BACKWARDS)
             if new_board.is_in_eating_position(piece.move_right_backwards(), Direction.RIGHT_BACKWARDS):
                 possible_eating_right = True
-                new_board.eat_piece(self.copy_board_matrix(matrix), possible_boards, piece, piece.move_right_backwards(),
+                new_board.eat_piece(self.copy_board_matrix(matrix), possible_boards, piece,
+                                    piece.move_right_backwards(),
                                     Direction.RIGHT_BACKWARDS)
             if not possible_eating_right and not possible_eating_left and not possible_eating_left_backwards and not possible_eating_right_backwards:
                 possible_boards.append(new_board)
-
+                # possible_boards.append([new_board, MoveKind.EATING])
 
     def copy_board_matrix(self, matrix):
         copied = self.create_empty_board_matrix()
@@ -329,7 +350,7 @@ class Board:
             # Eat pieces recursively and add all the possible results
             return True, self.eat_piece_in_board(current_piece, new_piece, direction)
 
-    def eat_piece_in_board(self,current_piece, new_piece, direction):
+    def eat_piece_in_board(self, current_piece, new_piece, direction):
         # Set an empty space in the place where the piece was
         self.board[current_piece.row][current_piece.col] = EmptyPiece()
         # Set an empty space in the place where the other's team piece was

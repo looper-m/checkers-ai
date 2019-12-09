@@ -1,7 +1,7 @@
 import time
 import game_pieces
-
-from algorithm import Algorithm, CacheValue
+import math
+from MTDf import MTDf, CacheValue
 from board import Board
 from empty_piece import EmptyPiece
 from piece import Piece
@@ -49,7 +49,7 @@ board.board[5][4] = EmptyPiece()
 print_board(board)
 print("\n")
 
-game = Algorithm()
+game = MTDf()
 next_board = game.iterative_deepening(board, 2, BLACK, RED)[1]
 
 print_board(next_board)
@@ -73,21 +73,17 @@ times = 1
 start = time.time()
 while next_board.get_winner() is None:
     if turn:
+        print("BALCK")
         next_board = game.iterative_deepening(next_board, 7, BLACK, RED)[1]
     else:
+        print("RED")
         next_board = game.iterative_deepening(next_board, 7, RED, BLACK)[1]
     times += 1
+    print(times)
     # print(next_board.maybe_a_winner())
     print_board(next_board)
     turn = not turn
-    if times == 20:
-        break
     print("\n")
 
-# testcache = TranspositionCache()
-# testcache.store(next_board.board, CacheValue(0, 20, 3))
-#
-# testcache.printcache()
-# testcache.retrieve(next_board.board)
-
+print(next_board.get_winner().name)
 print("average time: ", (time.time() - start) / times)

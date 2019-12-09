@@ -1,5 +1,5 @@
 import game_pieces
-from algorithm import Algorithm
+from MTDf import MTDf
 from board import Board, Direction
 from empty_piece import EmptyPiece
 from king_piece import KingPiece
@@ -51,7 +51,7 @@ name = input("Enter your name: ")
 human_player = Player(True, name, game_pieces.RED_PIECE, game_pieces.RED_KING_PIECE)
 ai_player = Player(False, "AI", game_pieces.BLACK_PIECE, game_pieces.BLACK_KING_PIECE)
 board = Board(human_player, ai_player)
-algorithm = Algorithm()
+algorithm = MTDf()
 
 
 # TODO: remove this, is to try things
