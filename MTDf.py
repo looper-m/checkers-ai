@@ -24,15 +24,15 @@ class MTDf:
         self.transposition_table = TranspositionCache()
         self.history_table = HistoryTable()
 
-    def iterative_deepening(self, game_board, depth, ai, player2):
+    def iterative_deepening(self, game_board, depth, ai, player):
         firstGuess = 0
         best_board = game_board
         for d in range(depth):
-            firstGuess, best_board = self.mtd(game_board, d, firstGuess, ai, player2)
+            firstGuess, best_board = self.mtd(game_board, d, firstGuess, ai, player)
             # timeout return/ break
         return firstGuess, best_board
 
-    def mtd(self, game_board, depth, firstGuess, ai, player2):
+    def mtd(self, game_board, depth, firstGuess, ai, player):
         score = firstGuess
         best_board = game_board
         upperBound = +math.inf
@@ -44,7 +44,7 @@ class MTDf:
             else:
                 beta = score
 
-            score, best_board = self.alpha_beta_with_memory(game_board, beta - 1, beta, depth, True, ai, player2)
+            score, best_board = self.alpha_beta_with_memory(game_board, beta - 1, beta, depth, True, ai, player)
             if score < beta:
                 upperBound = score
             else:
