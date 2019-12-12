@@ -308,6 +308,13 @@ class Board:
     def get_piece(self, row, col):
         return self.board[row][col]
 
+    def get_piece_pos(self,piece):
+        return (piece.row,piece.col)
+
+    def get_piece_symbol(self,row,col):
+        piece = self.board[row][col]
+        return piece.symbol
+
     def possible_move_directions(self, piece):
         directions = []
         moved_left = piece.move_left()

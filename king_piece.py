@@ -3,6 +3,7 @@ class KingPiece:
         self.row = row
         self.col = col
         self.player = player
+        self.center = [row, col]
         self.symbol = player.king_symbol
 
     def move_right(self):

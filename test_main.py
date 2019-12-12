@@ -1,8 +1,7 @@
 import time
 import game_pieces
-import math
-from MTDf import MTDf, CacheValue
-from MiniMax import MiniMax
+
+from algorithm import Algorithm, CacheValue
 from board import Board
 from empty_piece import EmptyPiece
 from piece import Piece
@@ -44,26 +43,26 @@ board = Board(RED, BLACK)
 # print(board.get_winner())
 
 
-# board.board[3][2] = Piece(3, 2, RED)
-# board.board[5][4] = EmptyPiece()
-#
-# print_board(board)
-# print("\n")
+board.board[3][2] = Piece(3, 2, RED)
+board.board[5][4] = EmptyPiece()
 
-game = MTDf()
-next_board = game.iterative_deepening(board, 5, BLACK, RED)[1]
-#
-# print_board(next_board)
-# print("\n")
-#
-# next_board.board[3][4] = Piece(3, 4, RED)
-# next_board.board[5][2] = EmptyPiece()
-# next_board.board[4][3] = EmptyPiece()
-#
-# print_board(next_board)
-# print("\n")
-#
-# next_board = game.iterative_deepening(next_board, 7, BLACK, RED)[1]
+print_board(board)
+print("\n")
+
+game = Algorithm()
+next_board = game.iterative_deepening(board, 2, BLACK, RED)[1]
+
+print_board(next_board)
+print("\n")
+
+next_board.board[3][4] = Piece(3, 4, RED)
+next_board.board[5][2] = EmptyPiece()
+next_board.board[4][3] = EmptyPiece()
+
+print_board(next_board)
+print("\n")
+
+next_board = game.iterative_deepening(next_board, 7, BLACK, RED)[1]
 
 
 # print_board(next_board)
@@ -74,41 +73,21 @@ times = 1
 start = time.time()
 while next_board.get_winner() is None:
     if turn:
-        print("BLACK")
-        next_board = game.iterative_deepening(next_board, 5, BLACK, RED)[1]
+        next_board = game.iterative_deepening(next_board, 7, BLACK, RED)[1]
     else:
-        print("RED")
-        next_board = game.iterative_deepening(next_board, 5, RED, BLACK)[1]
+        next_board = game.iterative_deepening(next_board, 7, RED, BLACK)[1]
     times += 1
-    print(times)
     # print(next_board.maybe_a_winner())
     print_board(next_board)
     turn = not turn
+    if times == 20:
+        break
     print("\n")
 
-print(next_board.get_winner().name)
-print("average time: ", (time.time() - start) / times)
+# testcache = TranspositionCache()
+# testcache.store(next_board.board, CacheValue(0, 20, 3))
+#
+# testcache.printcache()
+# testcache.retrieve(next_board.board)
 
-#
-# game = MiniMax()
-# next_board = game.minimax_alphabeta(board, 5,-math.inf, math.inf, True, BLACK, RED)[1]
-#
-# turn = False
-# times = 1
-# start = time.time()
-# while next_board.get_winner() is None:
-#     if turn:
-#         print("BLACK")
-#         next_board = game.minimax_alphabeta(next_board, 5, -math.inf, math.inf, True, BLACK, RED)[1]
-#     else:
-#         print("RED")
-#         next_board = game.minimax_alphabeta(next_board, 5, -math.inf, math.inf, True, RED, BLACK)[1]
-#     times += 1
-#     print(times)
-#     # print(next_board.maybe_a_winner())
-#     print_board(next_board)
-#     turn = not turn
-#     print("\n")
-#
-# print(next_board.get_winner().name)
-# print("average time: ", (time.time() - start) / times)
+print("average time: ", (time.time() - start) / times)
